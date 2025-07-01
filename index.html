@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Coffee Roasting Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-gray-100 dark:bg-gray-800 p-4 flex flex-col gap-4">
+    <h1 class="text-xl font-bold mb-2">☕ Roast Events</h1>
+    <div class="flex flex-col gap-2">
+      <button id="chargeBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Charge</button>
+      <input id="chargeTemp" type="number" placeholder="Charge °C" class="border p-1 rounded text-gray-900" />
+
+      <button id="turnBtn" class="bg-purple-500 text-white px-4 py-2 rounded">Turning Point</button>
+      <input id="turnTemp" type="number" placeholder="Turning °C" class="border p-1 rounded text-gray-900" />
+
+      <button id="dryBtn" class="bg-yellow-500 text-white px-4 py-2 rounded">Dry End</button>
+      <input id="dryTemp" type="number" placeholder="Dry End °C" class="border p-1 rounded text-gray-900" />
+
+      <button id="crackBtn" class="bg-red-500 text-white px-4 py-2 rounded">First Crack</button>
+      <input id="crackTemp" type="number" placeholder="First Crack °C" class="border p-1 rounded text-gray-900" />
+
+      <button id="endBtn" class="bg-green-600 text-white px-4 py-2 rounded">End Roast</button>
+      <input id="endTemp" type="number" placeholder="End °C" class="border p-1 rounded text-gray-900" />
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6 flex flex-col items-center">
+    <div id="timer" class="text-6xl font-mono mb-4">00:00</div>
+    <div id="ratiosLine" class="mb-6 text-lg font-semibold">Ratios: N/A</div>
+    <div class="w-full max-w-3xl">
+      <canvas id="roastChart" height="200"></canvas>
+    </div>
+  </main>
+
+  <audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
+  <script>
+    let startTime = null;
+    let timerInterval;
+    const timestamps = {};
+    const temps = {};
+    const eventList = [];
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = String(sec % 60).padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function updateTimer() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      document.getElementById("timer").textContent = formatTime(elapsed);
+      updateRatios();
+    }
+
+    function updateRatios() {
+      if (!timestamps.charge) return;
+      const now = timestamps.end || Date.now();
+      const total = Math.floor((now - timestamps.charge) / 1000);
+
+      const d = k => timestamps[k] ? Math.floor((timestamps[k] - timestamps.charge) / 1000) : total;
+      const durations = {
+        drying: timestamps.dry ? d('dry') : total,
+        maillard: timestamps.dry && timestamps.crack ? Math.floor((timestamps.crack - timestamps.dry) / 1000) : 0,
+        development: timestamps.crack ? (timestamps.end ? Math.floor((timestamps.end - timestamps.crack) / 1000) : Math.floor((Date.now() - timestamps.crack) / 1000)) : 0
+      };
+
+      const ratio = val => total ? ((val / total) * 100).toFixed(1) : 0;
+      document.getElementById("ratiosLine").textContent =
+        `Ratios: Drying ${formatTime(durations.drying)} (${ratio(durations.drying)}%) | Maillard ${formatTime(durations.maillard)} (${ratio(durations.maillard)}%) | Development ${formatTime(durations.development)} (${ratio(durations.development)}%)`;
+    }
+
+    const beep = () => document.getElementById('beep').play();
+
+    const bindEvent = (btnId, key, tempId, nextInputId = null) => {
+      const button = document.getElementById(btnId);
+      const input = document.getElementById(tempId);
+
+      const triggerEvent = () => {
+        const now = Date.now();
+        const temp = parseFloat(input.value);
+        if (isNaN(temp)) return alert("Please enter a valid temperature");
+
+        if (key === "charge") {
+          startTime = now;
+          clearInterval(timerInterval);
+          timerInterval = setInterval(updateTimer, 1000);
+          Object.keys(timestamps).forEach(k => delete timestamps[k]);
+          Object.keys(temps).forEach(k => delete temps[k]);
+          eventList.length = 0;
+        }
+
+        timestamps[key] = now;
+        temps[key] = temp;
+        eventList.push({ key, time: now, temp });
+
+        if (key === "end") clearInterval(timerInterval);
+
+        beep();
+        updateRatios();
+
+        chart.data.datasets[0].data = eventList.map(e => ({
+          x: ((e.time - timestamps.charge) / 60000),
+          y: e.temp
+        }));
+        chart.update();
+
+        if (nextInputId) {
+          setTimeout(() => {
+            const next = document.getElementById(nextInputId);
+            if (next) next.focus();
+          }, 50);
+        }
+      };
+
+      button.onclick = triggerEvent;
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          triggerEvent();
+        }
+      });
+    };
+
+    let chart;
+    window.addEventListener("load", () => {
+      const ctx = document.getElementById("roastChart").getContext("2d");
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          datasets: [
+            {
+              label: "Roast Curve (°C)",
+              data: [],
+              borderColor: "#dc2626",
+              backgroundColor: "rgba(220, 38, 38, 0.1)",
+              tension: 0.4,
+              pointRadius: 4,
+              fill: true,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              title: { display: true, text: "Time (min)" },
+              type: 'linear',
+              beginAtZero: true
+            },
+            y: {
+              title: { display: true, text: "Temperature (°C)" },
+              beginAtZero: false,
+              suggestedMin: 100,
+              suggestedMax: 250
+            }
+          }
+        }
+      });
+
+      bindEvent("chargeBtn", "charge", "chargeTemp", "turnTemp");
+      bindEvent("turnBtn", "turn", "turnTemp", "dryTemp");
+      bindEvent("dryBtn", "dry", "dryTemp", "crackTemp");
+      bindEvent("crackBtn", "crack", "crackTemp", "endTemp");
+      bindEvent("endBtn", "end", "endTemp");
+    });
+  </script>
+</body>
+</html>
