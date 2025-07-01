@@ -6,35 +6,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
 </head>
-<body class="bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 flex min-h-screen">
+<body class="bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 min-h-screen flex flex-col lg:flex-row">
 
   <!-- Sidebar -->
-  <aside class="w-64 bg-gray-100 dark:bg-gray-800 p-4 flex flex-col gap-4">
+  <aside class="w-full lg:w-64 bg-gray-100 dark:bg-gray-800 p-4 flex flex-col gap-4 order-2 lg:order-none">
     <h1 class="text-xl font-bold mb-2">☕ Roast Events</h1>
-    <div class="flex flex-col gap-2">
-      <button id="chargeBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Charge</button>
-      <input id="chargeTemp" type="number" placeholder="Charge °C" class="border p-1 rounded text-gray-900" />
-
-      <button id="turnBtn" class="bg-purple-500 text-white px-4 py-2 rounded">Turning Point</button>
-      <input id="turnTemp" type="number" placeholder="Turning °C" class="border p-1 rounded text-gray-900" />
-
-      <button id="dryBtn" class="bg-yellow-500 text-white px-4 py-2 rounded">Dry End</button>
-      <input id="dryTemp" type="number" placeholder="Dry End °C" class="border p-1 rounded text-gray-900" />
-
-      <button id="crackBtn" class="bg-red-500 text-white px-4 py-2 rounded">First Crack</button>
-      <input id="crackTemp" type="number" placeholder="First Crack °C" class="border p-1 rounded text-gray-900" />
-
-      <button id="endBtn" class="bg-green-600 text-white px-4 py-2 rounded">End Roast</button>
-      <input id="endTemp" type="number" placeholder="End °C" class="border p-1 rounded text-gray-900" />
+    <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-1">
+      <div>
+        <button id="chargeBtn" class="bg-blue-500 text-white px-2 py-1 w-full rounded text-sm">Charge</button>
+        <input id="chargeTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
+      </div>
+      <div>
+        <button id="turnBtn" class="bg-purple-500 text-white px-2 py-1 w-full rounded text-sm">Turning</button>
+        <input id="turnTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
+      </div>
+      <div>
+        <button id="dryBtn" class="bg-yellow-500 text-white px-2 py-1 w-full rounded text-sm">Dry End</button>
+        <input id="dryTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
+      </div>
+      <div>
+        <button id="crackBtn" class="bg-red-500 text-white px-2 py-1 w-full rounded text-sm">First Crack</button>
+        <input id="crackTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
+      </div>
+      <div>
+        <button id="endBtn" class="bg-green-600 text-white px-2 py-1 w-full rounded text-sm">End Roast</button>
+        <input id="endTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
+      </div>
     </div>
   </aside>
 
   <!-- Main Content -->
-  <main class="flex-1 p-6 flex flex-col items-center">
-    <div id="timer" class="text-6xl font-mono mb-4">00:00</div>
-    <div id="ratiosLine" class="mb-6 text-lg font-semibold">Ratios: N/A</div>
-    <div class="w-full max-w-3xl">
+  <main class="flex-1 p-4 flex flex-col items-center order-1 lg:order-none">
+    <div id="timer" class="text-4xl font-mono mb-2 sm:text-6xl">00:00</div>
+    <div id="ratiosLine" class="mb-4 text-base sm:text-lg font-semibold text-center">Ratios: N/A</div>
+    <div class="w-full max-w-full sm:max-w-3xl">
       <canvas id="roastChart" height="200"></canvas>
     </div>
   </main>
@@ -48,11 +55,7 @@
     const temps = {};
     const eventList = [];
 
-    function formatTime(sec) {
-      const m = Math.floor(sec / 60);
-      const s = String(sec % 60).padStart(2, '0');
-      return `${m}:${s}`;
-    }
+    const formatTime = (sec) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
 
     function updateTimer() {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -64,30 +67,28 @@
       if (!timestamps.charge) return;
       const now = timestamps.end || Date.now();
       const total = Math.floor((now - timestamps.charge) / 1000);
-
-      const d = k => timestamps[k] ? Math.floor((timestamps[k] - timestamps.charge) / 1000) : total;
-      const durations = {
-        drying: timestamps.dry ? d('dry') : total,
-        maillard: timestamps.dry && timestamps.crack ? Math.floor((timestamps.crack - timestamps.dry) / 1000) : 0,
-        development: timestamps.crack ? (timestamps.end ? Math.floor((timestamps.end - timestamps.crack) / 1000) : Math.floor((Date.now() - timestamps.crack) / 1000)) : 0
-      };
-
+      const dryingEnd = timestamps.dry || now;
+      const crackStart = timestamps.crack || now;
+      const endTime = timestamps.end || now;
+      const drying = Math.floor((dryingEnd - timestamps.charge) / 1000);
+      const maillard = Math.floor((crackStart - dryingEnd) / 1000);
+      const development = Math.floor((endTime - crackStart) / 1000);
       const ratio = val => total ? ((val / total) * 100).toFixed(1) : 0;
       document.getElementById("ratiosLine").textContent =
-        `Ratios: Drying ${formatTime(durations.drying)} (${ratio(durations.drying)}%) | Maillard ${formatTime(durations.maillard)} (${ratio(durations.maillard)}%) | Development ${formatTime(durations.development)} (${ratio(durations.development)}%)`;
+        `Ratios: Drying ${formatTime(drying)} (${ratio(drying)}%) | Maillard ${formatTime(maillard)} (${ratio(maillard)}%) | Development ${formatTime(development)} (${ratio(development)}%)`;
     }
 
-    const beep = () => document.getElementById('beep').play();
+    function beep() {
+      document.getElementById("beep").play();
+    }
 
-    const bindEvent = (btnId, key, tempId, nextInputId = null) => {
+    function bindEvent(btnId, key, tempId, nextInputId = null) {
       const button = document.getElementById(btnId);
       const input = document.getElementById(tempId);
-
       const triggerEvent = () => {
         const now = Date.now();
         const temp = parseFloat(input.value);
         if (isNaN(temp)) return alert("Please enter a valid temperature");
-
         if (key === "charge") {
           startTime = now;
           clearInterval(timerInterval);
@@ -95,23 +96,32 @@
           Object.keys(timestamps).forEach(k => delete timestamps[k]);
           Object.keys(temps).forEach(k => delete temps[k]);
           eventList.length = 0;
+          chart.options.plugins.annotation.annotations = {};
         }
-
         timestamps[key] = now;
         temps[key] = temp;
         eventList.push({ key, time: now, temp });
-
         if (key === "end") clearInterval(timerInterval);
-
         beep();
         updateRatios();
-
+        const minuteTime = ((now - timestamps.charge) / 60000);
         chart.data.datasets[0].data = eventList.map(e => ({
           x: ((e.time - timestamps.charge) / 60000),
           y: e.temp
         }));
+        chart.options.plugins.annotation.annotations[key] = {
+          type: 'line',
+          xMin: minuteTime,
+          xMax: minuteTime,
+          borderColor: '#666',
+          borderWidth: 1,
+          label: {
+            content: key.toUpperCase(),
+            enabled: true,
+            position: 'start'
+          }
+        };
         chart.update();
-
         if (nextInputId) {
           setTimeout(() => {
             const next = document.getElementById(nextInputId);
@@ -119,15 +129,14 @@
           }, 50);
         }
       };
-
       button.onclick = triggerEvent;
-      input.addEventListener("keydown", (e) => {
+      input.addEventListener("keydown", e => {
         if (e.key === "Enter") {
           e.preventDefault();
           triggerEvent();
         }
       });
-    };
+    }
 
     let chart;
     window.addEventListener("load", () => {
@@ -149,6 +158,11 @@
         },
         options: {
           responsive: true,
+          plugins: {
+            annotation: {
+              annotations: {}
+            }
+          },
           scales: {
             x: {
               title: { display: true, text: "Time (min)" },
@@ -162,9 +176,9 @@
               suggestedMax: 250
             }
           }
-        }
+        },
+        plugins: [Chart.registry.getPlugin('annotation')]
       });
-
       bindEvent("chargeBtn", "charge", "chargeTemp", "turnTemp");
       bindEvent("turnBtn", "turn", "turnTemp", "dryTemp");
       bindEvent("dryBtn", "dry", "dryTemp", "crackTemp");
