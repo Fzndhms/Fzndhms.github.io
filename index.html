@@ -8,43 +8,41 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
 </head>
-<body class="bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 min-h-screen flex flex-col lg:flex-row">
+<body class="bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 min-h-screen flex flex-col p-4">
 
-  <!-- Sidebar -->
-  <aside class="w-full lg:w-64 bg-gray-100 dark:bg-gray-800 p-4 flex flex-col gap-4 order-2 lg:order-none">
-    <h1 class="text-xl font-bold mb-2">Roastery by Wise</h1>
-    <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-1">
-      <div>
-        <button id="chargeBtn" class="bg-blue-500 text-white px-2 py-1 w-full rounded text-sm">Charge</button>
-        <input id="chargeTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
-      </div>
-      <div>
-        <button id="turnBtn" class="bg-purple-500 text-white px-2 py-1 w-full rounded text-sm">Turning</button>
-        <input id="turnTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
-      </div>
-      <div>
-        <button id="dryBtn" class="bg-yellow-500 text-white px-2 py-1 w-full rounded text-sm">Dry End</button>
-        <input id="dryTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
-      </div>
-      <div>
-        <button id="crackBtn" class="bg-red-500 text-white px-2 py-1 w-full rounded text-sm">First Crack</button>
-        <input id="crackTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
-      </div>
-      <div>
-        <button id="endBtn" class="bg-green-600 text-white px-2 py-1 w-full rounded text-sm">End Roast</button>
-        <input id="endTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
-      </div>
-    </div>
-  </aside>
+  <h1 class="text-xl font-bold mb-4 text-center">☕ Coffee Roasting Tracker</h1>
 
-  <!-- Main Content -->
-  <main class="flex-1 p-4 flex flex-col items-center order-1 lg:order-none">
-    <div id="timer" class="text-4xl font-mono mb-2 sm:text-6xl">00:00</div>
-    <div id="ratiosLine" class="mb-4 text-base sm:text-lg font-semibold text-center">Ratios: N/A</div>
-    <div class="w-full max-w-full sm:max-w-3xl">
-      <canvas id="roastChart" height="200"></canvas>
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-6">
+    <div>
+      <button id="chargeBtn" class="bg-blue-500 text-white w-full py-1 rounded text-sm">Charge</button>
+      <input id="chargeTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
     </div>
-  </main>
+    <div>
+      <button id="turnBtn" class="bg-purple-500 text-white w-full py-1 rounded text-sm">Turning</button>
+      <input id="turnTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
+    </div>
+    <div>
+      <button id="dryBtn" class="bg-yellow-500 text-white w-full py-1 rounded text-sm">Dry End</button>
+      <input id="dryTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
+    </div>
+    <div>
+      <button id="crackBtn" class="bg-red-500 text-white w-full py-1 rounded text-sm">First Crack</button>
+      <input id="crackTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
+    </div>
+    <div>
+      <button id="endBtn" class="bg-green-600 text-white w-full py-1 rounded text-sm">End Roast</button>
+      <input id="endTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
+    </div>
+  </div>
+
+  <div class="text-center mb-4">
+    <div id="timer" class="text-4xl font-mono mb-2">00:00</div>
+    <div id="ratiosLine" class="text-base font-semibold">Ratios: N/A</div>
+  </div>
+
+  <div class="w-full max-w-full">
+    <canvas id="roastChart" height="200"></canvas>
+  </div>
 
   <audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
 
