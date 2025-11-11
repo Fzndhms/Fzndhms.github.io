@@ -1,188 +1,567 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <title>Coffee Roasting Tracker</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dieu Geura Calculator Product</title>
+    <style>
+        /* --- Global Styling --- */
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #f4f4f4;
+            --border-color: #ddd;
+            --text-color: #333;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --helper-text-color: #5a5a5a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* --- Container --- */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+
+        /* --- Form & Fieldset Styling --- */
+        fieldset {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        legend {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            padding: 0 10px;
+            margin-left: 10px;
+        }
+        
+        /* --- Grid Layouts --- */
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        /* --- Input & Label --- */
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield; /* Firefox */
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none; /* Chrome, Safari, Edge */
+            margin: 0;
+        }
+        
+        .helper-text {
+            font-size: 0.85rem;
+            color: var(--helper-text-color);
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* --- Tombol --- */
+        .btn {
+            padding: 10px 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn-primary { background-color: var(--primary-color); color: #fff; }
+        .btn-primary:hover { background-color: #004494; }
+
+        .btn-danger { background-color: var(--danger-color); color: #fff; }
+        .btn-danger:hover { background-color: #c82333; }
+        
+        .btn-success { background-color: var(--success-color); color: #fff; }
+        .btn-success:hover { background-color: #218838; }
+
+        /* --- Bagian 2: Bahan Baku Grid --- */
+        #bahan-baku-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .bahan-item {
+            border: 1px dashed var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .bahan-item-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .subtotal-bahan {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--success-color);
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        /* --- Bagian 4: Dashboard Hasil --- */
+        .dashboard-hasil {
+            background-color: #f9f9f9;
+            border-color: #cce5ff;
+        }
+        
+        .hasil-item, .rekomendasi-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .hasil-item:last-child, .rekomendasi-item:last-child {
+            border-bottom: none;
+        }
+
+        .hasil-label {
+            font-weight: 600;
+        }
+        .hasil-value, .rekomendasi-value {
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        .hasil-value.readonly, .rekomendasi-value.readonly {
+            background-color: #eee;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        #total-hpp {
+            color: var(--danger-color);
+            font-size: 1.5rem;
+        }
+        #gross-profit, #margin-profit {
+            color: var(--success-color);
+        }
+        #rekomendasi-harga-nett, #rekomendasi-harga-menu {
+            color: var(--primary-color);
+        }
+        #rekomendasi-harga-menu {
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--success-color);
+        }
+
+        hr.divider {
+            border: 0;
+            height: 1px;
+            background: var(--border-color);
+            margin: 25px 0;
+        }
+
+    </style>
 </head>
-<body class="bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 min-h-screen flex flex-col p-4">
+<body>
 
-  <h1 class="text-xl font-bold mb-4 text-center">Roastery by Wise</h1>
+    <div class="container">
+        <h1>Dieu Geura Calculator Product</h1>
 
-  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-6">
-    <div>
-      <button id="chargeBtn" class="bg-blue-500 text-white w-full py-1 rounded text-sm">Charge</button>
-      <input id="chargeTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
+        <form id="hpp-form">
+
+            <fieldset>
+                <legend>Bagian 1: Detail Resep</legend>
+                <div class="form-grid-2">
+                    <div class="input-group">
+                        <label for="nama-produk">Nama Produk / Resep</label>
+                        <input type="text" id="nama-produk" placeholder="Contoh: Kopi Susu Gula Aren">
+                    </div>
+                    <div class="input-group">
+                        <label for="kategori-produk">Kategori Produk</label>
+                        <select id="kategori-produk">
+                            <option value="Minuman Kopi">Minuman Kopi</option>
+                            <option value="Minuman Non-Kopi">Minuman Non-Kopi</option>
+                            <option value="Makanan">Makanan</option>
+                            <option value="Merchandise">Merchandise</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="pajak-resto">Pajak Restoran (PB1) %</label>
+                        <input type="number" id="pajak-resto" value="10" min="0">
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Bagian 2: Biaya Bahan Baku (Raw Materials)</legend>
+                <div id="bahan-baku-list">
+                    </div>
+                <button type="button" id="tambah-bahan" class="btn btn-primary" style="margin-top: 20px;">+ Tambah Bahan Baku</button>
+            </fieldset>
+
+            <fieldset>
+                <legend>Bagian 3: Biaya Tetap per Produk</legend>
+                <div class="form-grid-2">
+                    <div class="input-group">
+                        <label for="biaya-kemasan">Biaya Kemasan (Cup, Lid, dll)</label>
+                        <input type="number" id="biaya-kemasan" value="0" min="0" placeholder="Contoh: 1500">
+                    </div>
+                    <div class="input-group">
+                        <label for="biaya-lain">Biaya Lain-lain (Stiker, Garnish, dll)</label>
+                        <input type="number" id="biaya-lain" value="0" min="0" placeholder="Contoh: 200">
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="dashboard-hasil">
+                <legend>Bagian 4: Dashboard Hasil & Kalkulator Margin</legend>
+
+                <div class="hasil-item">
+                    <span class="hasil-label">Total HPP (COGS)</span>
+                    <span class="hasil-value" id="total-hpp">Rp 0</span>
+                </div>
+                
+                <hr class="divider">
+
+                <h3>Simulasi Margin (Tentukan Harga Jual)</h3>
+                <div class="input-group" style="margin-top: 15px;">
+                    <label for="harga-menu">Masukkan Harga Menu (Yang Dibayar Pelanggan)</label>
+                    <input type="number" id="harga-menu" value="0" min="0" placeholder="Contoh: 22000">
+                </div>
+                
+                <div class="rekomendasi-item">
+                    <span class="hasil-label">Pendapatan Bersih Anda (Revenue)</span>
+                    <span class="rekomendasi-value readonly" id="pendapatan-bersih">Rp 0</span>
+                </div>
+                <div class="rekomendasi-item">
+                    <span class="hasil-label">Gross Profit (Profit Kotor)</span>
+                    <span class="rekomendasi-value" id="gross-profit">Rp 0</span>
+                </div>
+                <div class="helper-text">(Profit ini adalah **sebelum** dipotong biaya operasional seperti Gaji, Sewa, Listrik, Marketing, dll.)</div>
+
+                <div class="rekomendasi-item" style="margin-top: 10px;">
+                    <span class="hasil-label">Profit Margin (%)</span>
+                    <span class="rekomendasi-value" id="margin-profit">0%</span>
+                </div>
+
+                <hr class="divider">
+
+                <h3>Kalkulator Harga (Tentukan Target Margin)</h3>
+                <div class="input-group" style="margin-top: 15px;">
+                    <label for="target-margin">Masukkan Target Margin Anda (%)</label>
+                    <input type="number" id="target-margin" value="70" min="0" max="100" placeholder="Contoh: 70">
+                </div>
+                <div class="helper-text">(Ini adalah **Profit Margin** (Profit / Harga Jual Nett). Jangan samakan dengan **Markup** (Profit / HPP).)</div>
+
+                
+                <div class="rekomendasi-item" style="margin-top: 10px;">
+                    <span class="hasil-label">Rekomendasi Harga Jual (Nett/Revenue)</span>
+                    <span class="rekomendasi-value" id="rekomendasi-harga-nett">Rp 0</span>
+                </div>
+                <div class="rekomendasi-item">
+                    <span class="hasil-label">Rekomendasi Harga Menu (Inc. Tax)</span>
+                    <span class="rekomendasi-value" id="rekomendasi-harga-menu">Rp 0</span>
+                </div>
+            </fieldset>
+
+        </form>
+        
+        <button type="button" id="save-csv" class="btn btn-success" style="width: 100%; margin-top: 10px;">
+            Save Calculation as CSV
+        </button>
     </div>
-    <div>
-      <button id="turnBtn" class="bg-purple-500 text-white w-full py-1 rounded text-sm">Turning</button>
-      <input id="turnTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
-    </div>
-    <div>
-      <button id="dryBtn" class="bg-yellow-500 text-white w-full py-1 rounded text-sm">Dry End</button>
-      <input id="dryTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
-    </div>
-    <div>
-      <button id="crackBtn" class="bg-red-500 text-white w-full py-1 rounded text-sm">First Crack</button>
-      <input id="crackTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
-    </div>
-    <div>
-      <button id="endBtn" class="bg-green-600 text-white w-full py-1 rounded text-sm">End Roast</button>
-      <input id="endTemp" type="number" placeholder="°C" class="mt-1 w-full border p-1 rounded text-gray-900 text-sm" />
-    </div>
-  </div>
 
-  <div class="text-center mb-4">
-    <div id="timer" class="text-4xl font-mono mb-2">00:00</div>
-    <div id="ratiosLine" class="text-base font-semibold">Ratios: N/A</div>
-  </div>
+    <script>
+        // Menunggu DOM (HTML) selesai dimuat sebelum menjalankan script
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // --- Referensi Elemen DOM ---
+            const hppForm = document.getElementById("hpp-form");
+            const bahanBakuList = document.getElementById("bahan-baku-list");
+            const tambahBahanBtn = document.getElementById("tambah-bahan");
+            const saveCsvBtn = document.getElementById("save-csv");
 
-  <div class="w-full max-w-full">
-    <canvas id="roastChart" height="200"></canvas>
-  </div>
+            // Referensi elemen output
+            const totalHppEl = document.getElementById("total-hpp");
+            const pendapatanBersihEl = document.getElementById("pendapatan-bersih");
+            const grossProfitEl = document.getElementById("gross-profit");
+            const marginProfitEl = document.getElementById("margin-profit");
+            const rekomendasiHargaNettEl = document.getElementById("rekomendasi-harga-nett");
+            const rekomendasiHargaMenuEl = document.getElementById("rekomendasi-harga-menu");
 
-  <audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
-
-  <script>
-    let startTime = null;
-    let timerInterval;
-    const timestamps = {};
-    const temps = {};
-    const eventList = [];
-
-    const formatTime = (sec) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
-
-    function updateTimer() {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      document.getElementById("timer").textContent = formatTime(elapsed);
-      updateRatios();
-    }
-
-    function updateRatios() {
-      if (!timestamps.charge) return;
-      const now = timestamps.end || Date.now();
-      const total = Math.floor((now - timestamps.charge) / 1000);
-      const dryingEnd = timestamps.dry || now;
-      const crackStart = timestamps.crack || now;
-      const endTime = timestamps.end || now;
-      const drying = Math.floor((dryingEnd - timestamps.charge) / 1000);
-      const maillard = Math.floor((crackStart - dryingEnd) / 1000);
-      const development = Math.floor((endTime - crackStart) / 1000);
-      const ratio = val => total ? ((val / total) * 100).toFixed(1) : 0;
-      document.getElementById("ratiosLine").textContent =
-        `Ratios: Drying ${formatTime(drying)} (${ratio(drying)}%) | Maillard ${formatTime(maillard)} (${ratio(maillard)}%) | Development ${formatTime(development)} (${ratio(development)}%)`;
-    }
-
-    function beep() {
-      document.getElementById("beep").play();
-    }
-
-    function bindEvent(btnId, key, tempId, nextInputId = null) {
-      const button = document.getElementById(btnId);
-      const input = document.getElementById(tempId);
-      const triggerEvent = () => {
-        const now = Date.now();
-        const temp = parseFloat(input.value);
-        if (isNaN(temp)) return alert("Please enter a valid temperature");
-        if (key === "charge") {
-          startTime = now;
-          clearInterval(timerInterval);
-          timerInterval = setInterval(updateTimer, 1000);
-          Object.keys(timestamps).forEach(k => delete timestamps[k]);
-          Object.keys(temps).forEach(k => delete temps[k]);
-          eventList.length = 0;
-          chart.options.plugins.annotation.annotations = {};
-        }
-        timestamps[key] = now;
-        temps[key] = temp;
-        eventList.push({ key, time: now, temp });
-        if (key === "end") clearInterval(timerInterval);
-        beep();
-        updateRatios();
-        const minuteTime = ((now - timestamps.charge) / 60000);
-        chart.data.datasets[0].data = eventList.map(e => ({
-          x: ((e.time - timestamps.charge) / 60000),
-          y: e.temp
-        }));
-        chart.options.plugins.annotation.annotations[key] = {
-          type: 'line',
-          xMin: minuteTime,
-          xMax: minuteTime,
-          borderColor: '#666',
-          borderWidth: 1,
-          label: {
-            content: key.toUpperCase(),
-            enabled: true,
-            position: 'start'
-          }
-        };
-        chart.update();
-        if (nextInputId) {
-          setTimeout(() => {
-            const next = document.getElementById(nextInputId);
-            if (next) next.focus();
-          }, 50);
-        }
-      };
-      button.onclick = triggerEvent;
-      input.addEventListener("keydown", e => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          triggerEvent();
-        }
-      });
-    }
-
-    let chart;
-    window.addEventListener("load", () => {
-      const ctx = document.getElementById("roastChart").getContext("2d");
-      chart = new Chart(ctx, {
-        type: "line",
-        data: {
-          datasets: [
-            {
-              label: "Roast Curve (°C)",
-              data: [],
-              borderColor: "#dc2626",
-              backgroundColor: "rgba(220, 38, 38, 0.1)",
-              tension: 0.4,
-              pointRadius: 4,
-              fill: true,
+            // --- Objek Global untuk Menyimpan Hasil ---
+            // Ini menyimpan nilai mentah (angka) untuk digunakan oleh CSV
+            let calcResults = {};
+            
+            // --- Fungsi Helper: Format Mata Uang ---
+            function formatCurrency(value) {
+                const numberValue = parseFloat(value) || 0;
+                return new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(numberValue);
             }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            annotation: {
-              annotations: {}
+
+            // --- FUNGSI KALKULASI UTAMA ---
+            function calculateAll() {
+                // 0. Ambil Pajak (baru)
+                const pajakPersen = parseFloat(document.getElementById("pajak-resto").value) || 0;
+                const pajakDecimal = pajakPersen / 100;
+                
+                let totalBiayaBahanBaku = 0;
+
+                // 1. Hitung Total Biaya Bahan Baku
+                const itemsBahan = bahanBakuList.querySelectorAll(".bahan-item");
+                
+                itemsBahan.forEach(item => {
+                    const hargaBeli = parseFloat(item.querySelector(".bahan-harga").value) || 0;
+                    const qtyBeli = parseFloat(item.querySelector(".bahan-qty-beli").value) || 1; 
+                    const qtyPakai = parseFloat(item.querySelector(".bahan-qty-pakai").value) || 0;
+
+                    const hargaPerUnit = hargaBeli / qtyBeli;
+                    const subtotal = hargaPerUnit * qtyPakai;
+
+                    item.querySelector(".subtotal-bahan").textContent = `Subtotal: ${formatCurrency(subtotal)}`;
+                    item.dataset.subtotal = subtotal; // Simpan subtotal mentah
+                    
+                    totalBiayaBahanBaku += subtotal;
+                });
+
+                // 2. Ambil Biaya Tetap per Produk
+                const biayaKemasan = parseFloat(document.getElementById("biaya-kemasan").value) || 0;
+                const biayaLain = parseFloat(document.getElementById("biaya-lain").value) || 0;
+                
+                // 3. Hitung Total HPP (COGS)
+                const totalHPP = totalBiayaBahanBaku + biayaKemasan + biayaLain;
+                
+                // --- Kalkulasi Bagian 4: Dashboard ---
+
+                // 4. Kalkulasi Metode 1 (Simulasi Margin)
+                const hargaMenu = parseFloat(document.getElementById("harga-menu").value) || 0;
+                const pendapatanBersih = hargaMenu / (1 + pajakDecimal); // Perhitungan baru (presisi)
+                const grossProfit = pendapatanBersih - totalHPP;
+                const marginProfit = (pendapatanBersih > 0) ? (grossProfit / pendapatanBersih) * 100 : 0;
+                
+                // 5. Kalkulasi Metode 2 (Kalkulator Harga)
+                const targetMargin = parseFloat(document.getElementById("target-margin").value) || 0;
+                
+                let rekomendasiHargaNett = 0;
+                if (targetMargin < 100) {
+                    rekomendasiHargaNett = totalHPP / (1 - (targetMargin / 100));
+                }
+                const rekomendasiHargaMenu = rekomendasiHargaNett * (1 + pajakDecimal); // Perhitungan baru (presisi)
+
+                // --- Simpan semua hasil mentah ke objek global ---
+                calcResults = {
+                    totalHPP: totalHPP,
+                    pajakPersen: pajakPersen,
+                    hargaMenu: hargaMenu,
+                    pendapatanBersih: pendapatanBersih,
+                    grossProfit: grossProfit,
+                    marginProfit: marginProfit,
+                    targetMargin: targetMargin,
+                    rekomendasiHargaNett: rekomendasiHargaNett,
+                    rekomendasiHargaMenu: rekomendasiHargaMenu,
+                    biayaKemasan: biayaKemasan,
+                    biayaLain: biayaLain
+                };
+                
+                // --- Update Tampilan (DOM) ---
+                totalHppEl.textContent = formatCurrency(totalHPP);
+                pendapatanBersihEl.textContent = formatCurrency(pendapatanBersih);
+                grossProfitEl.textContent = formatCurrency(grossProfit);
+                marginProfitEl.textContent = `${marginProfit.toFixed(1)}%`;
+                rekomendasiHargaNettEl.textContent = formatCurrency(rekomendasiHargaNett);
+                rekomendasiHargaMenuEl.textContent = formatCurrency(rekomendasiHargaMenu);
             }
-          },
-          scales: {
-            x: {
-              title: { display: true, text: "Time (min)" },
-              type: 'linear',
-              beginAtZero: true
-            },
-            y: {
-              title: { display: true, text: "Temperature (°C)" },
-              beginAtZero: false,
-              suggestedMin: 100,
-              suggestedMax: 250
+
+            // --- Fungsi untuk Menambah Baris Bahan Baku ---
+            function tambahBahan() {
+                const newItem = document.createElement("div");
+                newItem.classList.add("bahan-item");
+                
+                newItem.innerHTML = `
+                    <div class="bahan-item-grid">
+                        <div><label>Nama Bahan</label><input type="text" class="bahan-nama" placeholder="Kopi Espresso"></div>
+                        <div><label>Harga Beli (Rp)</label><input type="number" class="bahan-harga" value="0" min="0" placeholder="200000"></div>
+                        <div><label>Qty Beli</label><input type="number" class="bahan-qty-beli" value="1" min="1" placeholder="1000"></div>
+                        <div><label>Satuan</label><select class="bahan-satuan"><option value="gram">gram</option><option value="ml">ml</option><option value="pcs">pcs</option><option value="kg">kg</option><option value="liter">liter</option></select></div>
+                        <div><label>Qty Pakai</label><input type="number" class="bahan-qty-pakai" value="0" min="0" placeholder="18"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                        <button type="button" class="btn btn-danger btn-sm remove-bahan">Hapus</button>
+                        <div class="subtotal-bahan">Subtotal: Rp 0</div>
+                    </div>
+                `;
+                bahanBakuList.appendChild(newItem);
             }
-          }
-        },
-        plugins: [Chart.registry.getPlugin('annotation')]
-      });
-      bindEvent("chargeBtn", "charge", "chargeTemp", "turnTemp");
-      bindEvent("turnBtn", "turn", "turnTemp", "dryTemp");
-      bindEvent("dryBtn", "dry", "dryTemp", "crackTemp");
-      bindEvent("crackBtn", "crack", "crackTemp", "endTemp");
-      bindEvent("endBtn", "end", "endTemp");
-    });
-  </script>
+
+            // --- Fungsi untuk Generate CSV ---
+            function generateCSV() {
+                // Pastikan kalkulasi terbaru
+                calculateAll();
+
+                let csvContent = "data:text/csv;charset=utf-8,";
+                
+                // --- BAGIAN 1: RINGKASAN PRODUK & FINANSIAL ---
+                csvContent += "RINGKASAN PRODUK DAN FINANSIAL\r\n";
+                csvContent += "Item,Nilai,Satuan\r\n";
+                
+                // Helper untuk membersihkan koma (agar tidak merusak CSV)
+                const clean = (str) => `"${String(str).replace(/"/g, '""')}"`;
+                const cleanNum = (num) => parseFloat(num) || 0;
+
+                const namaProduk = clean(document.getElementById("nama-produk").value || "Belum Ada Nama");
+                const kategori = clean(document.getElementById("kategori-produk").value);
+
+                csvContent += `Nama Produk,${namaProduk},\r\n`;
+                csvContent += `Kategori,${kategori},\r\n`;
+                csvContent += `Pajak Restoran,${cleanNum(calcResults.pajakPersen)},%\r\n`;
+                csvContent += `Total HPP (COGS),${cleanNum(calcResults.totalHPP)},Rp\r\n`;
+                csvContent += "\r\n"; // Baris kosong
+
+                csvContent += "--- Simulasi (Metode 1) ---\r\n";
+                csvContent += `Harga Menu,${cleanNum(calcResults.hargaMenu)},Rp\r\n`;
+                csvContent += `Pendapatan Bersih,${cleanNum(calcResults.pendapatanBersih)},Rp\r\n`;
+                csvContent += `Gross Profit,${cleanNum(calcResults.grossProfit)},Rp\r\n`;
+                csvContent += `Profit Margin,${cleanNum(calcResults.marginProfit.toFixed(2))},%\r\n`;
+                csvContent += "\r\n"; // Baris kosong
+
+                csvContent += "--- Rekomendasi (Metode 2) ---\r\n";
+                csvContent += `Target Margin,${cleanNum(calcResults.targetMargin)},%\r\n`;
+                csvContent += `Rekomendasi Harga Nett,${cleanNum(calcResults.rekomendasiHargaNett)},Rp\r\n`;
+                csvContent += `Rekomendasi Harga Menu,${cleanNum(calcResults.rekomendasiHargaMenu)},Rp\r\n`;
+                csvContent += "\r\n\r\n"; // 2 Baris kosong
+
+                // --- BAGIAN 2: DETAIL BAHAN BAKU ---
+                csvContent += "DETAIL BAHAN BAKU DAN BIAYA\r\n";
+                csvContent += "Nama Bahan,Harga Beli (Rp),Qty Beli,Satuan,Qty Pakai,Subtotal Biaya (Rp)\r\n";
+                
+                const itemsBahan = bahanBakuList.querySelectorAll(".bahan-item");
+                itemsBahan.forEach(item => {
+                    const nama = clean(item.querySelector(".bahan-nama").value);
+                    const harga = cleanNum(item.querySelector(".bahan-harga").value);
+                    const qtyBeli = cleanNum(item.querySelector(".bahan-qty-beli").value);
+                    const satuan = clean(item.querySelector(".bahan-satuan").value);
+                    const qtyPakai = cleanNum(item.querySelector(".bahan-qty-pakai").value);
+                    const subtotal = cleanNum(item.dataset.subtotal); // Ambil dari data-subtotal
+
+                    csvContent += `${nama},${harga},${qtyBeli},${satuan},${qtyPakai},${subtotal}\r\n`;
+                });
+                
+                // Tambahkan Biaya Tetap
+                csvContent += `Biaya Kemasan,${cleanNum(calcResults.biayaKemasan)},1,pcs,1,${cleanNum(calcResults.biayaKemasan)}\r\n`;
+                csvContent += `Biaya Lain-lain,${cleanNum(calcResults.biayaLain)},1,pcs,1,${cleanNum(calcResults.biayaLain)}\r\n`;
+
+                // --- BAGIAN 3: DOWNLOAD FILE ---
+                
+                // Buat nama file yang 'aman'
+                const safeFileName = (namaProduk.replace(/["']/g, "") || "produk_tanpa_nama").replace(/ /g, "_");
+                const fileName = `hpp_dieugeura_${safeFileName}.csv`;
+
+                // Buat link download 'virtual'
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", fileName);
+                document.body.appendChild(link); // Wajib di Firefox
+
+                link.click(); // Klik link tersebut
+
+                document.body.removeChild(link); // Hapus link setelah selesai
+            }
+
+
+            // --- Event Listeners ---
+            tambahBahanBtn.addEventListener("click", tambahBahan);
+            saveCsvBtn.addEventListener("click", generateCSV);
+
+            bahanBakuList.addEventListener("click", (e) => {
+                if (e.target.classList.contains("remove-bahan")) {
+                    e.target.closest(".bahan-item").remove();
+                    calculateAll();
+                }
+            });
+
+            hppForm.addEventListener("input", calculateAll);
+
+            // --- Inisialisasi ---
+            tambahBahan();
+            // Isi dengan data contoh agar tidak kosong
+            document.querySelector('.bahan-nama').value = 'Kopi Espresso';
+            document.querySelector('.bahan-harga').value = 200000;
+            document.querySelector('.bahan-qty-beli').value = 1000;
+            document.querySelector('.bahan-qty-pakai').value = 18;
+            
+            tambahBahan();
+            const lastItem = document.querySelector('.bahan-item:last-child');
+            lastItem.querySelector('.bahan-nama').value = 'Susu UHT';
+            lastItem.querySelector('.bahan-harga').value = 18000;
+            lastItem.querySelector('.bahan-qty-beli').value = 1000;
+            lastItem.querySelector('.bahan-satuan').value = 'ml';
+            lastItem.querySelector('.bahan-qty-pakai').value = 120;
+            
+            document.getElementById('biaya-kemasan').value = 1500;
+            document.getElementById('biaya-lain').value = 200;
+            document.getElementById('harga-menu').value = 24200; // Harga 22rb + PPN 10%
+            document.getElementById('target-margin').value = 70;
+
+            calculateAll(); // Jalankan kalkulasi pertama kali
+        });
+    </script>
+
 </body>
 </html>
